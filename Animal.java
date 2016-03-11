@@ -81,7 +81,7 @@ public class Animal {
 		timeWithoutFood=n;
 	}
 	public boolean die (){
-		if((age>agemax)||(timeWithoutFood>4)){ //sets alive on false if certain criteria are given
+		if((age>agemax)||(timeWithoutFood>3)){ //sets alive on false if certain criteria are given
 			alive=false;
 			return true;
 		}

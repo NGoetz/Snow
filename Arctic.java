@@ -6,35 +6,39 @@ import java.util.Vector;
 public class Arctic {
 	private int lengthx; //measures of world
 	private int lengthy;
-	private int tick; //age of world
-	private int [][] world;
-	private Vector<Rabbit> rabbits; //all rabbits/foxes
-	private Vector<Fox> foxes;
-	public Arctic(int [] [] startwelt, Vector<Rabbit> r, Vector<Fox>f ) { //startwelt should contain only zeros!
+	private static int tick; //age of world
+	private static int [][] world;
+	private static Vector<Rabbit> rabbits; //all rabbits/foxes
+	private static Vector<Fox> foxes;
+	int numberr;
+	int numberf;
+	public Arctic(int [] [] startwelt, Vector<Rabbit> r, Vector<Fox>f) { //startwelt should contain only zeros!
 		lengthx= startwelt.length;
-		lengthy=startwelt[1].length;
+		lengthy=startwelt[0].length;
 		tick=0;
 		world=startwelt;
 		rabbits=r;
 		foxes=f;
+		numberr=0;
+		numberf=0;
 	}
 
-	public int [][] getWorld (){
+	public static int [][] getWorld (){
 		return world;
 	}
-	public void setWorld (int [][]w){
+	public static void setWorld (int [][]w){
 		world=w;
 	}
 	public Vector<Rabbit> getRabbits(){
 		return rabbits;
 	}
-	public void setRabbits(Vector<Rabbit> r){
+	public static void setRabbits(Vector<Rabbit> r){
 		rabbits=r;
 	}
 	public Vector<Fox> getFoxes(){
 		return foxes;
 	}
-	public void setFoxes(Vector<Fox> f){
+	public static void setFoxes(Vector<Fox> f){
 		foxes=f;
 	}
 	public int getLengthx(){
@@ -49,57 +53,68 @@ public class Arctic {
 	public void setLengthy(int n){
 		lengthy=n;
 	}
-	public int getTick(){
+	public int getNumberr(){
+		return numberr;
+	}
+	public void setNumberr(int n){
+		numberr=n;
+	}
+	public int getNumberf(){
+		return numberf;
+	}
+	public void setNumberf(int n){
+		numberf=n;
+	}public int getTick(){
 		return tick;
 	}
-	public void setTick(int n){
+	public static void setTick(int n){
 		tick=n;
 	}
 
-	public void initate (){ //first settlement of life, random quantities and placements
+	public void initialize (int numberr, int numberf){ 
 		Random r=new Random();
-
-		int numberr=r.nextInt(31)+1;
-		int numberf=r.nextInt(31)+5;
-		int posx,posy;
+		int posx,posy, counter;
 		boolean taken =false;
 		for(int i=0; i<numberr;i++){
+			counter=0;
 			do{
+				counter++;//prevent failure if requested animals are more than space
 				taken=false;
 				posx=r.nextInt(lengthx);
 				posy=r.nextInt(lengthy);
-				for(int k=0; k<i; k++){
-					if (rabbits.elementAt(k).posx==posx&&rabbits.elementAt(k).posy==posy){
-						taken=true;
-					}
-				}
-			}while(taken==true);
+				if (world[posx][posy]==1){
+						taken=true;}
+				
+			}while(taken==true&&counter<20);
+			if(!taken&&counter<20){
 			Rabbit rnew= new Rabbit (true,0,posx,posy);
 			rabbits.addElement(rnew);
 			world[posx][posy]=1;
+			}
 		}
 
 		for(int i=0; i<numberf;i++){
+			counter=0;
 			do{
+				counter++;;
 				taken=false;
 				posx=r.nextInt(lengthx);
 				posy=r.nextInt(lengthy);
-				for(int k=0; k<i; k++){
-					for(int ra=0;ra<numberr;ra++)
-						if ((foxes.elementAt(k).posx==posx&&foxes.elementAt(k).posy==posy)||
-								(rabbits.elementAt(ra).posx==posx&&rabbits.elementAt(ra).posy==posy)){
+				if (world[posx][posy]!=0){
 							taken=true;
 						}
-				}while(taken==true);
+				}while(taken==true&&counter<20);
+				if(!taken&&counter<20){
 				Fox fnew= new Fox (true,0,posx,posy);
 				foxes.addElement(fnew);
 				world[posx][posy]=-2;
-			}while(taken==true);
+				}
+			}
 
 		}
-		printout();
+	
 
-	}
+	
 	public void printout(){//visualization
 		System.out.println(" ");
 		System.out.println(" ");
@@ -126,7 +141,7 @@ public class Arctic {
 			rabbits.elementAt(i).setAge(rabbits.elementAt(i).getAge()+1);
 			rabbits.elementAt(i).setTimeWithoutFood(rabbits.elementAt(i).getTimeWithoutFood()+1);
 			rabbits.elementAt(i).setTimeWithoutReproduction(rabbits.elementAt(i).getTimeWithoutReproduction()+1);
-			if(rabbits.elementAt(i).die()){//animal died, place in world is free an it is removed from the list
+			if(rabbits.elementAt(i).die()){//animal died, place in world is free and it is removed from the list
 				world[rabbits.elementAt(i).posx][rabbits.elementAt(i).posy]=0;
 				rabbits.removeElementAt(i);
 				i=i-1;
@@ -136,7 +151,7 @@ public class Arctic {
 			foxes.elementAt(i).setAge(foxes.elementAt(i).getAge()+1);
 			foxes.elementAt(i).setTimeWithoutFood(foxes.elementAt(i).getTimeWithoutFood()+1);
 			foxes.elementAt(i).setTimeWithoutReproduction(foxes.elementAt(i).getTimeWithoutReproduction()+1);
-			if(foxes.elementAt(i).die()){//animal died, place in world is free an it is removed from the list
+			if(foxes.elementAt(i).die()){//animal died, place in world is free and it is removed from the list
 				world[foxes.elementAt(i).posx][foxes.elementAt(i).posy]=0;
 				foxes.removeElementAt(i);
 				i=i-1;
@@ -161,6 +176,8 @@ public class Arctic {
 				rabbits.elementAt(i).setTimeWithoutFood(0);
 			move(false,rabbits.elementAt(i),rabbits.elementAt(i).posx,rabbits.elementAt(i).posy);
 		}
+		numberr=rabbits.size();
+		numberf=foxes.size();
 
 
 	}
@@ -172,7 +189,6 @@ public class Arctic {
 		int bailout=0; //counts tries to find a new place
 		boolean check=true; //if true, place in world isn't out of bounds
 		for(int s=0;s<f;s++){
-
 			do{
 				taken=false;
 				int dir=r.nextInt(4);//different directions (up, down, left, right, etc.)
@@ -183,6 +199,7 @@ public class Arctic {
 					if(posx>=lengthx||posy>=lengthy){//out of bounds!
 						taken=true;
 						check=false;
+						continue;
 					}
 
 				}
@@ -192,6 +209,7 @@ public class Arctic {
 					if(posx<0||posy<0){
 						taken=true;
 						check=false;
+						continue;
 					}
 				}
 				if(dir==2){
@@ -200,6 +218,7 @@ public class Arctic {
 					if(posy>=lengthy||posx<0){
 						taken=true;
 						check=false;
+						continue;
 					}
 
 				}
@@ -209,30 +228,28 @@ public class Arctic {
 					if(posx>=lengthx||posy<0){
 						taken=true;
 						check=false;
+						continue;
 					}
 				}
 				if(check){//not out of bounds, lets look if there is already someone
 					if (world[posx][posy]!=0){
 						taken=true;
+						continue;
 					}
 				}
 
 			}while(taken==true&&bailout<10);
-			if(bailout<10){//if we've tried already 10 times, there is no space for new life
-				if(rabbit){
-					Rabbit rnew= new Rabbit (true,0,posx,posy);//create a new sweet animal and place it in its space
-					rabbits.addElement(rnew);
-					world[posx][posy]=1;
-				}else if (!rabbit){
-					Fox fnew= new Fox (true,0,posx,posy);//create a new sweet animal and place it in its space
-					foxes.addElement(fnew);
-					world[posx][posy]=-2;
+			if(bailout>10)
+				continue;
+			if(rabbit&&check&&world[posx][posy]==0&&bailout<10){
+				Rabbit rnew= new Rabbit (true,0,posx,posy);//create a new sweet animal and place it in its space
+				rabbits.addElement(rnew);
+				world[posx][posy]=1;
+			}else if (!rabbit&&check&&world[posx][posy]==0&&bailout<10){
+				Fox fnew= new Fox (true,0,posx,posy);//create a new sweet animal and place it in its space
+				foxes.addElement(fnew);
+				world[posx][posy]=-2;
 				}
-
-
-
-
-			}
 		}
 	}
 	public void movehunt(Fox f){//searches first for food around the fox, otherwise moves him
@@ -324,7 +341,7 @@ public class Arctic {
 		int bailout=0;
 		world[x][y]=0;
 		Random r=new Random();
-		do{  //try to find a olace to move
+		do{  //try to find a place to move
 			taken=false;
 			check=true;
 			int dir=r.nextInt(4);
@@ -368,7 +385,7 @@ public class Arctic {
 					taken=true;
 				}else if(world[posx][posy]==1&&f==true){ //fox can move to rabbits and kill them
 					killRabbit(posx, posy);
-					world[posx][posy]=-2;
+					world[posx][posy]=0;
 					a.posy=posy;
 					a.posx=posx;
 					a.timeWithoutFood=0;
@@ -379,12 +396,24 @@ public class Arctic {
 			}
 
 		}while((taken==true&&bailout<10)||check==false);
+		if(world[posx][posy]==0){
 		a.posx=posx; //position of the animal is a successful changed one or the one from the beginning
 		a.posy=posy;
+		
 		if(f==true){
 			world[posx][posy]=-2;
 		}else{
 			world[posx][posy]=1;
+		}
+		}else{
+			a.posx=x;
+			a.posy=y;
+			if(f==true){
+				world[x][y]=-2;
+			}else{
+				world[x][y]=1;
+			}
+			
 		}
 
 	}
