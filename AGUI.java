@@ -195,7 +195,12 @@ public class AGUI extends Frame {//main class containing whole GUI
 				Arctic.setTick(0);
 				rsave=new Vector<Integer>();
 				fsave=new Vector<Integer>();
-				Game.initialize(Integer.parseInt(AGUI.rabbit.getText()),Integer.parseInt(AGUI.fox.getText()));
+				try{
+				Game.initialize(Integer.parseInt(AGUI.rabbit.getText()),Integer.parseInt(AGUI.fox.getText()));}
+				catch (Exception ex){
+					AGUI.fox.setText("You must enter numbers!");
+					AGUI.rabbit.setText("You must enter numbers!");
+				}
 				info.setText("Active");
 				timer.start();
 
