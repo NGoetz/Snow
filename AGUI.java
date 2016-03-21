@@ -20,7 +20,8 @@ public class AGUI extends Frame {//main class containing whole GUI
 	Label help;
 	Label help2;
 	Label info;
-	static JDialog meinJDialog;
+	static int height;
+	JDialog meinJDialog;
 	Timer timer;
 	Arctic Game; //class containing calculations
 	int[][]startwelt; //needed for starting sim
@@ -30,7 +31,7 @@ public class AGUI extends Frame {//main class containing whole GUI
 	Vector<Integer> rsave, fsave; //containing graphic data
 	GridBagConstraints straints = new GridBagConstraints();//preparing Layout-Tools
 	public AGUI(int w, int h) {
-		
+		height=h;
 		startwelt= new int [250][250];//size of world
 		rabbits=new Vector<Rabbit>();
 		foxes=new Vector<Fox>();
@@ -43,7 +44,7 @@ public class AGUI extends Frame {//main class containing whole GUI
 		meinJDialog.setSize(w, h);
 		JPanel Controller = new JPanel();
 		Dimension d=Toolkit.getDefaultToolkit().getScreenSize(); //set default-size
-		meinJDialog.setLocation((d.width-w)/2,(d.height-h)/2);
+		meinJDialog.setLocation((d.width-w)/2,(d.height-h)/2-25);
 		meinJDialog.addWindowListener(new MyWindowListener());
 		ActionListener action = new Buttonpress(); //introducing EventListener
 
@@ -101,7 +102,9 @@ public class AGUI extends Frame {//main class containing whole GUI
 		Controller.add(help2);
 		meinJDialog.add(Controller, BorderLayout.NORTH);
 		Vis AVis = new Vis();//including 2D-map-space
-		AVis.setPreferredSize(new Dimension(w,750));
+		if(h>1000){
+		AVis.setPreferredSize(new Dimension(w,750));}
+		else{AVis.setPreferredSize(new Dimension(w,500));}
 		meinJDialog.add(AVis, BorderLayout.CENTER);
 		AGraph AG = new AGraph();//including space for graphics
 		AG.setPreferredSize(new Dimension(w,155));
@@ -152,8 +155,13 @@ public class AGUI extends Frame {//main class containing whole GUI
 	  {
 	    public void paint(Graphics g)
 	    {	
+	    	
 	    	int width=3;
 	    	int height=3;
+	    	if(AGUI.height<1000){
+	    		width=2;
+	    		height=3;
+	    	}
 	      
 	      
 		
@@ -192,7 +200,7 @@ public class AGUI extends Frame {//main class containing whole GUI
 				Arctic.setWorld(startwelt);
 				Arctic.setRabbits(rabbits);
 				Arctic.setFoxes(foxes);
-				Arctic.setTick(0);
+				Game.setTick(0);
 				rsave=new Vector<Integer>();
 				fsave=new Vector<Integer>();
 				try{
@@ -221,7 +229,8 @@ public class AGUI extends Frame {//main class containing whole GUI
 		}
 	}
 	public static void main (String[] args){//just open window.
-		AGUI a= new AGUI(1000,1025);
+		Dimension screensize = java.awt.Toolkit.getDefaultToolkit().getScreenSize ();
+		AGUI a= new AGUI(1000,screensize.height-75);
 }
 
 }

@@ -6,7 +6,7 @@ import java.util.Vector;
 public class Arctic {
 	private int lengthx; //measures of world
 	private int lengthy;
-	private static int tick; //age of world
+	private int tick; //age of world
 	private static int [][] world;
 	private static Vector<Rabbit> rabbits; //all rabbits/foxes
 	private static Vector<Fox> foxes;
@@ -67,7 +67,7 @@ public class Arctic {
 	}public int getTick(){
 		return tick;
 	}
-	public static void setTick(int n){
+	public void setTick(int n){
 		tick=n;
 	}
 
