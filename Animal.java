@@ -10,9 +10,10 @@ public class Animal {
 	public int fertility;  //children born per reproduction
 	public int posx;  //position in world-array
 	public int posy;
-	public int speed;  //distance which can be travelled
-
-	public Animal(boolean a, int ag,int agmax, int twf,int twr, int rt, int f, int px, int py, int s){
+	public int speed;  //distance which can be travelled; helps to hunt(fox) or to find food (rabbit)
+	private int [] genome; //boni obtained by evolution
+	public boolean hasEaten; //if animal has consumed food in his life
+	public Animal(boolean a, int ag,int agmax, int twf,int twr, int rt, int f, int px, int py, int s, int[]g, boolean he){
 		alive=a;
 		age=ag;
 		agemax=agmax;
@@ -23,6 +24,8 @@ public class Animal {
 		posx=px;
 		posy=py;
 		speed=s;
+		genome=g;
+		hasEaten=he;
 	}
 
 
@@ -32,11 +35,17 @@ public class Animal {
 	public void setAlive(boolean a){
 		alive=a;
 	}
+	public boolean getHasEaten(){
+		return hasEaten;
+	}
+	public void setHasEaten(boolean a){
+		hasEaten=a;
+	}
 	public int getReproductionTime(){
-		return reproductionTime;
+		return reproductionTime+genome[2]/4;
 	}
 	public void setReproductionTime(int n){
-		reproductionTime=n;
+		reproductionTime=n+genome[2]/4;
 	}
 	public int getTimeWithoutReproduction(){
 		return timeWithoutReproduction;
@@ -45,10 +54,10 @@ public class Animal {
 		timeWithoutReproduction=n;
 	}
 	public int getFertility(){
-		return fertility;
+		return fertility+genome[3]/3;
 	}
 	public void setFertility(int n){
-		fertility=n;
+		fertility=n+genome[3]/3;
 	}
 	public int getPosx(){
 		return posx;
@@ -69,10 +78,10 @@ public class Animal {
 		agemax=n;
 	}
 	public int getSpeed(){
-		return speed;
+		return speed+genome[4]/3;
 	}
 	public void setSpeed(int n){
-		speed=n;
+		speed=n+genome[4]/3;
 	}
 	public int getTimeWithoutFood(){
 		return timeWithoutFood;
@@ -80,8 +89,14 @@ public class Animal {
 	public void setTimeWithoutFood(int n){
 		timeWithoutFood=n;
 	}
+	public int[] getGenome(){
+		return genome;
+	}
+	public void setGenome(int []a){
+		genome=a;
+	}
 	public boolean die (){
-		if((age>agemax)||(timeWithoutFood>3)){ //sets alive on false if certain criteria are given
+		if((age>agemax+genome[0]/3)||(timeWithoutFood>3-genome[1]/3)){ //sets alive on false if certain criteria are given
 			alive=false;
 			return true;
 		}

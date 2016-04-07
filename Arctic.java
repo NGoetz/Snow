@@ -1,5 +1,5 @@
 package snow;
-//movement->food&hunt
+
 import java.util.Random;
 import java.util.Vector;
 
@@ -12,6 +12,7 @@ public class Arctic {
 	private static Vector<Fox> foxes;
 	int numberr;
 	int numberf;
+	private boolean mutation;//mutations allowed?
 	public Arctic(int [] [] startwelt, Vector<Rabbit> r, Vector<Fox>f) { //startwelt should contain only zeros!
 		lengthx= startwelt.length;
 		lengthy=startwelt[0].length;
@@ -21,6 +22,7 @@ public class Arctic {
 		foxes=f;
 		numberr=0;
 		numberf=0;
+		mutation=true;
 	}
 
 	public static int [][] getWorld (){
@@ -70,10 +72,17 @@ public class Arctic {
 	public void setTick(int n){
 		tick=n;
 	}
+	public boolean getMutation(){
+		return mutation;
+	}
+	public void setMutation(boolean k){
+		mutation=k;
+	}
 
 	public void initialize (int numberr, int numberf){ 
 		Random r=new Random();
 		int posx,posy, counter;
+		int []g={0,0,0,0,0};//clean DNA
 		boolean taken =false;
 		for(int i=0; i<numberr;i++){
 			counter=0;
@@ -83,13 +92,13 @@ public class Arctic {
 				posx=r.nextInt(lengthx);
 				posy=r.nextInt(lengthy);
 				if (world[posx][posy]==1){
-						taken=true;}
-				
+					taken=true;}
+
 			}while(taken==true&&counter<20);
 			if(!taken&&counter<20){
-			Rabbit rnew= new Rabbit (true,0,posx,posy);
-			rabbits.addElement(rnew);
-			world[posx][posy]=1;
+				Rabbit rnew= new Rabbit (true,0,posx,posy,g,false);
+				rabbits.addElement(rnew);
+				world[posx][posy]=1;
 			}
 		}
 
@@ -101,21 +110,21 @@ public class Arctic {
 				posx=r.nextInt(lengthx);
 				posy=r.nextInt(lengthy);
 				if (world[posx][posy]!=0){
-							taken=true;
-						}
-				}while(taken==true&&counter<20);
-				if(!taken&&counter<20){
-				Fox fnew= new Fox (true,0,posx,posy);
+					taken=true;
+				}
+			}while(taken==true&&counter<20);
+			if(!taken&&counter<20){
+				Fox fnew= new Fox (true,0,posx,posy,g,false);
 				foxes.addElement(fnew);
 				world[posx][posy]=-2;
-				}
 			}
-
 		}
-	
 
-	
-	public void printout(){//visualization
+	}
+
+
+
+	public void printout(){//visualization - only for console adaption
 		System.out.println(" ");
 		System.out.println(" ");
 		System.out.println("The biotop after "+tick+" steps.");
@@ -157,23 +166,25 @@ public class Arctic {
 				i=i-1;
 			}
 		}
-		for(int i=0;i<rabbits.size();i++){//rabbits may make babies
-			if(rabbits.elementAt(i).getReproductionTime()==rabbits.elementAt(i).getTimeWithoutReproduction()){
+		Random ra= new Random();
+		for(int i=0;i<rabbits.size();i++){//rabbits may make babies if they are not too hungry
+			if(rabbits.elementAt(i).getReproductionTime()==rabbits.elementAt(i).getTimeWithoutReproduction()&&rabbits.elementAt(i).getHasEaten()==true){
 				rabbits.elementAt(i).setTimeWithoutReproduction(0);
-				born(true, rabbits.elementAt(i),rabbits.elementAt(0).getFertility());
+				born(true, rabbits.elementAt(i),rabbits.elementAt(0).getFertility(),ra);
 			}
 		}
 		for(int i=0;i<foxes.size();i++){//foxes make babies
-			if(foxes.elementAt(i).getReproductionTime()==foxes.elementAt(i).getTimeWithoutReproduction()){
+			if(foxes.elementAt(i).getReproductionTime()==foxes.elementAt(i).getTimeWithoutReproduction()&&foxes.elementAt(i).getHasEaten()==true){
 				foxes.elementAt(i).setTimeWithoutReproduction(0);
-				born(false, foxes.elementAt(i),foxes.elementAt(0).getFertility());
+				born(false, foxes.elementAt(i),foxes.elementAt(0).getFertility(),ra);
 			}
 			movehunt(foxes.elementAt(i));//foxes go hunting and move
 		}
-		for(int i=0;i<rabbits.size();i++){//rabbits move. They find food with a chance of 20%
-			int s=r.nextInt(5);
-			if(s==1)
+		for(int i=0;i<rabbits.size();i++){//rabbits move. They have a chance of finding food
+			int s=r.nextInt(6);//faster rabbit->more food
+			if(s+rabbits.elementAt(i).getSpeed()>=14)
 				rabbits.elementAt(i).setTimeWithoutFood(0);
+			rabbits.elementAt(i).setHasEaten(true);
 			move(false,rabbits.elementAt(i),rabbits.elementAt(i).posx,rabbits.elementAt(i).posy);
 		}
 		numberr=rabbits.size();
@@ -181,9 +192,8 @@ public class Arctic {
 
 
 	}
-	public void born(boolean rabbit, Animal a, int f){//function for creating sweet animal babies
+	public void born(boolean rabbit, Animal a, int f, Random r){//function for creating sweet animal babies
 		boolean taken =false; //place has no space for another animal
-		Random r= new Random();
 		int posx=0;
 		int posy=0;
 		int bailout=0; //counts tries to find a new place
@@ -241,97 +251,82 @@ public class Arctic {
 			}while(taken==true&&bailout<10);
 			if(bailout>10)
 				continue;
+
+			int [] g={a.getGenome()[0],a.getGenome()[1],a.getGenome()[2],a.getGenome()[3],a.getGenome()[4]};//if mutation allowed, children may have different DNA
+			if(mutation){
+				int k=r.nextInt(8);
+				int h=r.nextInt(5);
+				if(k==0){
+					int t=r.nextInt(2);
+					if(t==0){
+						g[h]=g[h]+1;
+					}else{
+						g[h]=g[h]-1;
+					}
+				}
+			}
 			if(rabbit&&check&&world[posx][posy]==0&&bailout<10){
-				Rabbit rnew= new Rabbit (true,0,posx,posy);//create a new sweet animal and place it in its space
+				Rabbit rnew= new Rabbit (true,0,posx,posy, g,false);//create a new sweet animal and place it in its space
 				rabbits.addElement(rnew);
 				world[posx][posy]=1;
 			}else if (!rabbit&&check&&world[posx][posy]==0&&bailout<10){
-				Fox fnew= new Fox (true,0,posx,posy);//create a new sweet animal and place it in its space
+				Fox fnew= new Fox (true,0,posx,posy, g,false);//create a new sweet animal and place it in its space
 				foxes.addElement(fnew);
 				world[posx][posy]=-2;
-				}
+			}
 		}
 	}
 	public void movehunt(Fox f){//searches first for food around the fox, otherwise moves him
 		world [f.posx][f.posy]=0;
 		int posx=f.posx;
 		int posy=f.posy;
-		if(posx>1){
-			if(world[posx-1][posy]==1){//is the area around in bounds and is there food?
-				killRabbit(posx-1, posy);//then move there, kill the rabbit and reset time without food
-				world[posx-1][posy]=-2;
-				f.posx=f.posx-1;
-				f.timeWithoutFood=0;
-				return; //fox moved - no further orders needed
-			}
+		int k=f.getSpeed()-12;//faster fox->more chances to hunt
+		for(int i=1; i<k; i++)
+		{
+			if(posx>i){
+				if(world[posx-i][posy]==1){//is the area around in bounds and is there food?
+					killRabbit(posx-i, posy);//then move there, kill the rabbit and reset time without food
+					world[posx-i][posy]=-2;
+					f.posx=f.posx-i;
+					f.timeWithoutFood=0;
+					f.setHasEaten(true);
+					return; //fox moved - no further orders needed
+				}
 
-		}
-		else if (posx<lengthx-1){
-			if(world[posx+1][posy]==1){
-				killRabbit(posx+1, posy);
-				world[posx+1][posy]=-2;
-				f.posx=f.posx+1;
-				f.timeWithoutFood=0;
-				return;
 			}
-		}
-		else if(posy>1){
-			if(world[posx][posy-1]==1){
-				killRabbit(posx, posy-1);
-				world[posx][posy-1]=-2;
-				f.posy=f.posy-1;
-				f.timeWithoutFood=0;
-				return;
+			else if (posx<lengthx-i){
+				if(world[posx+i][posy]==1){
+					killRabbit(posx+i, posy);
+					world[posx+i][posy]=-2;
+					f.posx=f.posx+i;
+					f.timeWithoutFood=0;
+					f.setHasEaten(true);
+					return;
+				}
 			}
+			else if(posy>i){
+				if(world[posx][posy-i]==1){
+					killRabbit(posx, posy-i);
+					world[posx][posy-i]=-2;
+					f.posy=f.posy-i;
+					f.timeWithoutFood=0;
+					f.setHasEaten(true);
+					return;
+				}
 
-		}
-		else if (posy<lengthy-1){
-			if(world[posx][posy+1]==1){
-				killRabbit(posx, posy+1);
-				world[posx][posy+1]=-2;
-				f.posy=f.posy+1;
-				f.timeWithoutFood=0;
-				return;
+			}
+			else if (posy<lengthy-i){
+				if(world[posx][posy+i]==1){
+					killRabbit(posx, posy+1);
+					world[posx][posy+i]=-2;
+					f.posy=f.posy+i;
+					f.timeWithoutFood=0;
+					f.setHasEaten(true);
+					return;
+				}
 			}
 		}
-		if(posx>2){
-			if(world[posx-2][posy]==1){
-				killRabbit(posx, posy+1);
-				world[posx-2][posy]=-2;
-				f.posx=f.posx-2;
-				f.timeWithoutFood=0;
-				return; 
-			}
 
-		}
-		else if (posx<lengthx-2){
-			if(world[posx+2][posy]==1){
-				killRabbit(posx+2, posy);
-				world[posx+2][posy]=-2;
-				f.posx=f.posx+2;
-				f.timeWithoutFood=0;
-				return;
-			}
-		}
-		else if(posy>2){
-			if(world[posx][posy-2]==1){
-				killRabbit(posx, posy-2);
-				world[posx][posy-2]=-2;
-				f.posy=f.posy-2;
-				f.timeWithoutFood=0;
-				return;
-			}
-
-		}
-		else if (posy<lengthy-2){
-			if(world[posx][posy+2]==1){
-				killRabbit(posx, posy+2);
-				world[posx][posy+2]=-2;
-				f.posy=f.posy+2;
-				f.timeWithoutFood=0;
-				return;
-			}
-		}
 		move(true,f, posx, posy); // no rabbit around, move without hunting
 
 	}
@@ -389,6 +384,7 @@ public class Arctic {
 					a.posy=posy;
 					a.posx=posx;
 					a.timeWithoutFood=0;
+					a.setHasEaten(true);
 					return;
 				}else if(world[posx][posy]==-2&&f==true){
 					taken=true;
@@ -397,14 +393,14 @@ public class Arctic {
 
 		}while((taken==true&&bailout<10)||check==false);
 		if(world[posx][posy]==0){
-		a.posx=posx; //position of the animal is a successful changed one or the one from the beginning
-		a.posy=posy;
-		
-		if(f==true){
-			world[posx][posy]=-2;
-		}else{
-			world[posx][posy]=1;
-		}
+			a.posx=posx; //position of the animal is a successful changed one or the one from the beginning
+			a.posy=posy;
+
+			if(f==true){
+				world[posx][posy]=-2;
+			}else{
+				world[posx][posy]=1;
+			}
 		}else{
 			a.posx=x;
 			a.posy=y;
@@ -413,7 +409,7 @@ public class Arctic {
 			}else{
 				world[x][y]=1;
 			}
-			
+
 		}
 
 	}
