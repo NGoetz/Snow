@@ -10,4 +10,4 @@ The GUI contains a complete control panel, with infos, a pause button and the po
 There are also to visualizations: A two dimensional world map with every animals drawn in and a long term graphic showing the amount
 of animals of each spezies.
 
-Note: The best results are achieved by a starting amount of 1:2 (foxes:rabbits).
+Note: The best results are achieved by a starting amount of 2000 foxes and 4000 rabbits
